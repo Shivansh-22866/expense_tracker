@@ -3,7 +3,8 @@ import 'package:expense_tracker/widgets/expense_item.dart';
 import 'package:flutter/material.dart';
 
 class ExpensesList extends StatelessWidget {
-  const ExpensesList({super.key, required this.expenses, required this.onRemoveExpense});
+  const ExpensesList(
+      {super.key, required this.expenses, required this.onRemoveExpense});
 
   final List<Expense> expenses;
 
@@ -12,7 +13,7 @@ class ExpensesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.8,
+      height: MediaQuery.of(context).size.height * 0.4,
       child: ListView.builder(
         itemCount: expenses.length,
         itemBuilder: (context, index) => Dismissible(
