@@ -1,10 +1,14 @@
+import 'dart:ffi';
+import 'package:expense_tracker/models/expense.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 final dateFormatter = DateFormat.yMd();
 
 class NewExpense extends StatefulWidget {
-  const NewExpense({super.key});
+  const NewExpense({super.key, required this.onAddExpense});
+
+  final Function(Expense) onAddExpense;
 
   @override
   State<NewExpense> createState() => _NewExpenseState();
@@ -14,6 +18,7 @@ class _NewExpenseState extends State<NewExpense> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
   DateTime? _selectedDate;
+  Category _selectedCategory = Category.leisure;
 
   void _datePicker() async {
     final pickedDate = await showDatePicker(
@@ -25,6 +30,69 @@ class _NewExpenseState extends State<NewExpense> {
     setState(() {
       _selectedDate = pickedDate;
     });
+  }
+
+  void _submitExpenseData() {
+    final enteredAmount = double.tryParse(_amountController.text);
+    if (enteredAmount == null || enteredAmount <= 0) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text('Error'),
+                content: const Text('Please enter a valid amount'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ));
+      return;
+    }
+
+    if (_titleController.toString().trim().isEmpty) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text('Error'),
+                content: const Text('Please enter the title'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ));
+      return;
+    }
+
+    if (_selectedDate == null) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text('Error'),
+                content: const Text('Please enter a date'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ));
+      return;
+    }
+
+    widget.onAddExpense(Expense(
+        title: _titleController.text,
+        amount: double.tryParse(_amountController.text)!,
+        date: _selectedDate!,
+        category: _selectedCategory));
   }
 
   @override
@@ -73,17 +141,32 @@ class _NewExpenseState extends State<NewExpense> {
             ],
           ),
           const SizedBox(
-            height: 16,
+            height: 26,
           ),
           Row(
             children: [
+              DropdownButton(
+                  value: _selectedCategory,
+                  items: Category.values
+                      .map((e) => DropdownMenuItem(
+                          value: e, child: Text(e.name.toUpperCase())))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    setState(() {
+                      _selectedCategory = value;
+                    });
+                  }),
+              const Spacer(),
               TextButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
                   child: Text('Cancel')),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: _submitExpenseData,
                 child: Text('Save changes'),
               )
             ],
